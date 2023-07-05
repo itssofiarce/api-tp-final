@@ -1,10 +1,17 @@
 import requests
 
+###### GLOBAL VARS #######
+server="127.0.0.1"
+port=8000
+
+
+
+
 # El código del cliente API que ya tienes aquí...
 
 def ver_municipios():
     """Ver el JSON crudo con todos los municipios."""
-    response = requests.get("http://localhost:8000/redes/tp/api/data")
+    response = requests.get(f"http://{server}:{port}/api/data")
     if response.status_code == 200:
         print(response.text)
     else:
@@ -12,7 +19,7 @@ def ver_municipios():
 
 def municipo_info(nombre):
     """Ver los datos de un municipio específico."""
-    response = requests.get(f"http://localhost:8000/redes/tp/api/data/{nombre}")
+    response = requests.get(f"http://{server}:{port}/api/data/municipios/?nombre={nombre}")
     if response.status_code == 200:
         print(response.json())
     else:
@@ -20,7 +27,7 @@ def municipo_info(nombre):
 
 def provincias():
     """Ver todas las provincias sin municipios."""
-    response = requests.get("http://localhost:8000/redes/tp/api/data/provincias")
+    response = requests.get(f"http://{server}:{port}/api/data/provincias")
     if response.status_code == 200:
         print(response.json())
     else:
@@ -28,7 +35,7 @@ def provincias():
 
 def municipios():
     """Ver todos los municipios separados por provincia."""
-    response = requests.get("http://localhost:8000/redes/tp/api/data/provincias/municipios")
+    response = requests.get(f"http://{server}:{port}/api/data/municipios")
     if response.status_code == 200:
         print(response.json())
     else:
@@ -36,7 +43,7 @@ def municipios():
 
 def categoria_all():
     """Ver municipios según categoría."""
-    response = requests.get("http://localhost:8000/redes/tp/api/data/provincias/municipios/categoria")
+    response = requests.get(f"http://{server}:{port}/api/data/provincias/municipios/categoria")
     if response.status_code == 200:
         print(response.json())
     else:
@@ -44,7 +51,7 @@ def categoria_all():
 
 def categoria_por_nombre(categoria):
     """Ver todos los municipios de una categoría específica."""
-    response = requests.get(f"http://localhost:8000/redes/tp/api/data/provincias/municipios/{categoria}")
+    response = requests.get(f"http://{server}:{port}/api/data/provincias/municipios/categoria?nombre={categoria}")
     if response.status_code == 200:
         print(response.json())
     else:
@@ -53,7 +60,7 @@ def categoria_por_nombre(categoria):
 def update_nombre_completo_municipio(nombre, nombre_completo):
     """Cambiar el nombre completo de un municipio."""
     data = {"nombre_completo": nombre_completo}
-    response = requests.put(f"http://localhost:8000/redes/tp/api/data/provincias/{nombre}/{nombre_completo}", json=data)
+    response = requests.put(f"http://{server}:{port}/api/data/provincias/{nombre}/{nombre_completo}", json=data)
     if response.status_code == 200:
         print(response.json())
     else:
@@ -62,7 +69,7 @@ def update_nombre_completo_municipio(nombre, nombre_completo):
 def update_municipio_categoria(nombre, categoria):
     """Cambiar la categoría de un municipio."""
     data = {"categoria": categoria}
-    response = requests.put(f"http://localhost:8000/redes/tp/api/data/provincias/{nombre}/cat/{categoria}", json=data)
+    response = requests.put(f"http://{server}:{port}/api/data/provincias/{nombre}/cat/{categoria}", json=data)
     if response.status_code == 200:
         print(response.json())
     else:
@@ -71,7 +78,7 @@ def update_municipio_categoria(nombre, categoria):
 def agregar_municipio(nombre, nombre_completo, categoria):
     """Agregar un nuevo municipio."""
     data = {"nombre": nombre, "nombre_completo": nombre_completo, "categoria": categoria}
-    response = requests.post("http://localhost:8000/redes/tp/api/data/add", json=data)
+    response = requests.post(f"http://{server}:{port}/api/data/add", json=data)
     if response.status_code == 200:
         print(response.json())
     else:
@@ -79,9 +86,9 @@ def agregar_municipio(nombre, nombre_completo, categoria):
 
 def del_municipio(nombre):
     """Eliminar un municipio."""
-    response = requests.delete(f"http://localhost:8000/redes/tp/api/data/remove?nombre={nombre}")
+    response = requests.delete(f"http://{server}:{port}/api/data/remove?nombre={nombre}")
     if response.status_code == 200:
-        print(response.json())
+        print(f"El municipio de {nombre} se eliminó")
     else:
         print(f"Error al eliminar el municipio. Código de estado: {response.status_code}")
 
