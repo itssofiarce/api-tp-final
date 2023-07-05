@@ -16,7 +16,7 @@ if response.status_code != 200:
 # Guardarlos en un archivo json --> municipios.json
 data = json.loads(response.text)
 open("municipios.json", "wb").write(response.content)
-
+municipios = data['municipios']
 # Acceso a los municipios
 
 def get_provincias():     
@@ -28,7 +28,56 @@ def get_provincias():
             provincias[provin] = []
     return provincias
 
-def get_municipios(name=None): 
+
+def ver_municipios():
+    with open("municipios.json", "r", encoding='utf-8') as file:
+        data_municipios = file.read()
+    return data_municipios    
+
+
+# ENDPOINTS --> Get
+
+# Nop parameters
+@app.get('/')
+def root():
+    return {"Bienvenid@!"}
+
+#Ver el json crudo
+@app.get('/api/data')
+def municipios():
+    return ver_municipios()
+
+# Ver todas las provincias, sin municipios y a que pprov pertenece el muni
+@app.get('/api/data/provincias')
+def provincias(nombre = None):
+    prov_muni = get_provincias()
+    municipios = data['municipios']
+
+    
+    # Todos los municipios
+    if nombre == None:
+        return prov_muni
+    
+
+    # Cargar datos
+    for muni in municipios:
+            provin = muni["provincia"]["nombre"]
+            nombre_com = muni['nombre']
+            prov_muni[provin].append(nombre_com)
+
+    # El nombre es de una provincia
+    if nombre in prov_muni:
+        return prov_muni[nombre]
+    # No es el nombre de una provincia sino de un municipio:
+    else:   
+        for clave, valor in prov_muni.items():
+            if nombre in valor:
+                return f"El municipio de {nombre} esta en la provincia: {clave}"
+    
+
+# Ver todos los municipios, separados por provincia
+@app.get('/api/data/municipios/')
+def municipios(nombre = None):
     municipios= data["municipios"]
     prov_muni = get_provincias()
 
@@ -37,27 +86,19 @@ def get_municipios(name=None):
             provin = muni["provincia"]["nombre"]
             nombre_com = muni['nombre']
             prov_muni[provin].append(nombre_com)
-
-    # Todos los municipios
-    if name == None:
-        return prov_muni
     
-    # El nombre es de una provincia
-    nombre = name
-    if nombre in prov_muni:
-        return prov_muni[nombre]
-    # No es el nombre de una provincia sino de un municipio:
-    else:   
-        for clave, valor in prov_muni.items():
-            if nombre in valor:
-                return f"El municipio de {name} esta en la provincia: {clave}"
+    if nombre == None:
+        return prov_muni
+    else:
 
-def ver_municipios():
-    with open("municipios.json", "r", encoding='utf-8') as file:
-        data_municipios = file.read()
-    return data_municipios    
+        for muni in municipios:
+            muni = dict(muni)
+            if muni['nombre'].lower() == nombre.lower():
+                return muni
 
-def get_categoria(cat = None):
+# Ver todas las categorías
+@app.get('/api/data/provincias/municipios/categoria')
+def categoria_all(nombre = None):
     municipios= data["municipios"]
     categorias = {}
     for muni in municipios:
@@ -65,7 +106,7 @@ def get_categoria(cat = None):
         if categoria not in categorias:
             categorias[categoria] = []
 
-    if cat == None:
+    if nombre == None:
         return categorias
 
     for muni in municipios:
@@ -73,76 +114,18 @@ def get_categoria(cat = None):
         categorias[categoria].append(muni["nombre"])
     
     # Es una categoria
-    if cat in categorias.keys():
-        return categorias[cat]
-    
+    todas_cat = list(categorias.keys())
+    if nombre in todas_cat:
+        return categorias[nombre]
     # Es un municipio
     for clave, valor in categorias.items():
-        if cat in valor:
-            return f"El municipio de {cat} es de la categoría: {clave}"
-
-
-# ENDPOINTS --> Get
-@app.get('/')
-def root():
-    return {"Bienvenid@!"}
-
-#Ver el json crudo
-@app.get('/redes/tp/api/data')
-def municipios():
-    return ver_municipios()
-
-# Ver todas las provincias, sin municipios
-@app.get('/redes/tp/api/data/provincias')
-async def provincias():
-    return get_provincias()
-
-# Ver todos los datos de x municipio
-@app.get('/redes/tp/api/data/{nombre}')
-def municipo_info(nombre: str):
-    municipios= data["municipios"]
-    # Cargar datos
-    for muni in municipios:
-        if muni['nombre'] == nombre.capitalize():
-            return muni
-
-# Ver todos los municipios, separados por provincia
-@app.get('/redes/tp/api/data/provincias/municipios')
-def municipios():
-    return get_municipios()
-
-# Ver la provincia, dado un x municipio 
-@app.get('/redes/tp/api/data/provincias/{municipio}')
-async def municipios_por_nombre(nombre: str):
-    return get_municipios(f"{nombre}")
-
-
-# Ver todas las categorías
-@app.get('/redes/tp/api/data/provincias/municipios/categoria')
-def categoria_all():
-    return get_categoria()
-
-# Ver municipios segun x categoría
-@app.get('/redes/tp/api/data/provincias/municipios/{categoria}')
-async def categoria_por_nombre(categoria: str):
-    cg = categoria.capitalize()
-    return get_categoria(f"{cg}")
-
-# Ver todos los municipios de x provincia 
-@app.get('/redes/tp/api/data/provincias/municipios/pro/{provincia}')
-async def municipio_de_prov(provincia: str):
-    pr = provincia.capitalize()
-    return get_municipios(pr)
-
-
-
-#ver espacios
+        if nombre in list(valor):
+            return f"El municipio de {nombre} es de la categoría: {clave}"
 
 
 # ENDPOINTS --> Put
- 
 # Cambiar nombre completo del municipio
-@app.put('/redes/tp/api/data/provincias/{nombre}/{nombre_completo}')
+@app.put('/api/data/provincias/{nombre}/{nombre_completo}')
 def update_nombre_completo_municipio(nombre: str, nombre_completo: str):
     municipios= data["municipios"]
     for municipio in municipios:
@@ -156,7 +139,7 @@ def update_nombre_completo_municipio(nombre: str, nombre_completo: str):
     )    
 
 
-@app.put('/redes/tp/api/data/provincias/{nombre}/cat/{categoria}')
+@app.put('/api/data/provincias/{nombre}/cat/{categoria}')
 def update_municipio_categoria(nombre: str, categoria: str):
     municipios= data["municipios"]
     for municipio in municipios:
@@ -169,32 +152,24 @@ def update_municipio_categoria(nombre: str, categoria: str):
         detail=f"No se pudo actualizar la categoría de {nombre}. Municipio no encontrado."
     )   
 
-# Agregar nuevo municipio
 
-@app.post('/redes/tp/api/data/add')
+# ENDPOINTS --> Post
+# Agregar nuevo municipio
+@app.post('/api/data/add')
 async def agregar_municipio(mun: Municipio): 
     municipios= data["municipios"]
     municipio_nuevo = mun
     municipios.append(municipio_nuevo)
-    return municipio_nuevo
+    return dict(municipio_nuevo)
     
-    
-@app.delete('/redes/tp/api/data/remove')
+# ENDPOINTS --> Delete
+#El nombre a agregar tiene que estar en minuscula. 
+@app.delete('/api/data/remove')
 async def del_municipio(nombre: str):
     municipios= data["municipios"]
     for mun in municipios:
-        if mun["nombre"] == nombre.capitalize():
+        mun = dict(mun)
+        if mun["nombre"] == nombre.lower():
             indice = municipios.index(mun)
             municipios.pop(indice)
             return mun
-  
-
-
-
-
-
-            
-
-
-
-                
