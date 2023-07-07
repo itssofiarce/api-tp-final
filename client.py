@@ -6,9 +6,6 @@ port=8000
 
 
 
-
-# El código del cliente API que ya tienes aquí...
-
 def ver_municipios():
     """Ver el JSON crudo con todos los municipios."""
     response = requests.get(f"http://{server}:{port}/api/data")
@@ -92,9 +89,9 @@ def del_municipio(nombre):
     else:
         print(f"Error al eliminar el municipio. Código de estado: {response.status_code}")
 
-# Menú interactivo
+# Menú de opciones
 while True:
-    print("\n--- MENÚ INTERACTIVO ---")
+    print("\n Elija una opción: ")
     print("1. Ver JSON crudo con todos los municipios")
     print("2. Ver datos de un municipio específico")
     print("3. Ver todas las provincias sin municipios")
