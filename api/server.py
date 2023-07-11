@@ -196,14 +196,14 @@ async def agregar_municipio(mun: Municipio):
     municipios.append(municipio_nuevo)
     return dict(municipio_nuevo)
     
+
 # ENDPOINTS --> Delete
 #El nombre a agregar tiene que estar en minuscula. 
 @app.delete('/api/data/remove')
 async def del_municipio(nombre: str):
     municipios= data["municipios"]
     for mun in municipios:
-        mun = dict(mun)
-        if mun["nombre"] == nombre.lower():
+        if mun['nombre'].lower() == nombre.lower():
             indice = municipios.index(mun)
             municipios.pop(indice)
-            return mun
+
